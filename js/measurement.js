@@ -8,9 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Units configuration
     const units = {
-        length: ['Millimeter', 'Centimeter', 'Meter', 'Kilometer', 'Inch', 'Foot', 'Yard', 'Mile'],
-        volume: ['Milliliter', 'Liter', 'Gallon'],
-        weight: ['Gram', 'Kilogram', 'Ounce', 'Pound', 'Tonne'],
+        length: ['Feet', 'Inch', 'Yards', 'Centimeters'],
+        volume: ['Litre', 'Millilitre', 'Gallon'],
+        weight: ['Kilogram', 'Gram', 'Pound'],
         temperature: ['Celsius', 'Fahrenheit', 'Kelvin']
     };
 
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         performConversion();
     }
 
-    function performConversion() {
+    async function performConversion() {
         const fromVal = parseFloat(fromValueInput.value);
         if (isNaN(fromVal)) {
             toValueInput.value = '';
@@ -70,12 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         formulaText.innerText = `Converting...`;
         
-        // This is a placeholder display logic. In a real integration,
-        // you would call apiClient.getConvertedValue(fromUnit, toUnit, fromVal)
-        setTimeout(() => {
-            toValueInput.value = (fromVal * 1).toFixed(2); // Example placeholder math
-            formulaText.innerText = `Connected. Awaiting endpoint configuration for true mathematical conversions.`;
-        }, 150);
+        try {
+            const data = await apiClient.convert(fromVal, fromUnit, currentType, toUnit);
+            
+            if (data && data.result !== undefined) {
+                // Assuming backend returns { result: 5.00, ... }
+                toValueInput.value = data.result.toFixed(2);
+                formulaText.innerText = `${fromVal} ${fromUnit} = ${data.result.toFixed(4)} ${toUnit}`;
+            } else {
+                throw new Error("Invalid response format from server");
+            }
+        } catch (error) {
+            console.error('Conversion error:', error);
+            toValueInput.value = 'Error';
+            formulaText.innerText = error.message || 'Failed to convert measurement.';
+        }
     }
 
     // Event Listeners
