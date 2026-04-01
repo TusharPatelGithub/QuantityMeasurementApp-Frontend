@@ -19,7 +19,7 @@ class ApiClient {
                 // Using Promises to catch JSON decode error if body is empty
                 const errorData = await response.json().catch(() => null);
                 // Optional chaining (ES9/ES11)
-                throw new Error(errorData?.message || `HTTP Error: ${response.status}`);
+                throw new Error(errorData?.error || errorData?.message || `HTTP Error: ${response.status}`);
             }
 
             return await response.json();
@@ -44,4 +44,4 @@ class ApiClient {
     }
 }
 
-const apiClient = new ApiClient('https://localhost:5001');
+const apiClient = new ApiClient('http://localhost:5000');
