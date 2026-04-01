@@ -162,6 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Login successful!', 'success');
             if(response && response.token) {
                 localStorage.setItem('authToken', response.token);
+                
+                // Redirect to next measurement UI after short delay for toast to show
+                setTimeout(() => {
+                    window.location.href = 'measurement.html';
+                }, 1000);
             }
         } catch (error) {
             showToast(error.message || 'Login failed. Check credentials.', 'error');
