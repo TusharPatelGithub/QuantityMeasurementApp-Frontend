@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+:root {
+  --primary: #922b21;
+  --primary-hover: #7b241c;
+  --primary-light: #fdf2f1;
+  --accent: #e74c3c;
+  --text-dark: #1a1a2e;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f8f9fa;
+  --white: #ffffff;
+  --success: #16a34a;
+  --error: #dc2626;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 24px rgba(146,43,33,0.10);
+  --shadow-lg: 0 8px 40px rgba(146,43,33,0.13);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text-dark);
+  font-family: 'DM Sans', sans-serif;
+}
+
+// MUI overrides to match UC19 theme
+.MuiCssBaseline-root,
+.MuiTypography-root {
+  font-family: 'DM Sans', sans-serif !important;
+}
