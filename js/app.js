@@ -158,11 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerText = 'Logging in...';
 
         try {
-            const response = await apiClient.login(email, password);
-            showToast('Login successful!', 'success');
-            if(response && response.token) {
-                localStorage.setItem('authToken', response.token);
-            }
+           const response = await apiClient.login(email, password);
+showToast('Login successful!', 'success');
+if(response && response.token) {
+    localStorage.setItem('authToken', response.token);
+    setTimeout(() => {
+        window.location.href = 'measurement.html';
+    }, 1000);
+}
         } catch (error) {
             showToast(error.message || 'Login failed. Check credentials.', 'error');
         } finally {
