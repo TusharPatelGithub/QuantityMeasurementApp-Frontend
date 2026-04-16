@@ -44,4 +44,4 @@ class ApiClient {
     }
 }
 
-const apiClient = new ApiClient('https://localhost:5001');
+const apiClient = new ApiClient('https://quantitymeasurementapp-zjm0.onrender.com');
