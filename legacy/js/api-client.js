@@ -6,18 +6,11 @@ class ApiClient {
     // ES9 concepts: async/await, try/catch for exception handling
     async post(endpoint, data) {
         try {
-            const headers = {
-                'Content-Type': 'application/json'
-            };
-            
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
             const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 method: 'POST',
-                headers: headers,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(data)
             });
 
@@ -26,7 +19,7 @@ class ApiClient {
                 // Using Promises to catch JSON decode error if body is empty
                 const errorData = await response.json().catch(() => null);
                 // Optional chaining (ES9/ES11)
-                throw new Error(errorData?.error || errorData?.message || `HTTP Error: ${response.status}`);
+                throw new Error(errorData?.message || `HTTP Error: ${response.status}`);
             }
 
             return await response.json();
@@ -49,18 +42,6 @@ class ApiClient {
             mobileNumber 
         });
     }
-
-    async convert(value, unit, type, targetUnit) {
-        const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
-        return this.post('/api/v1/quantities/convert', {
-            first: {
-                value: value,
-                unit: unit.toUpperCase(),
-                measurementType: formattedType
-            },
-            targetUnit: targetUnit.toUpperCase()
-        });
-    }
 }
 
-const apiClient = new ApiClient('http://localhost:5000');
+const apiClient = new ApiClient('https://quantitymeasurementapp-zjm0.onrender.com');
