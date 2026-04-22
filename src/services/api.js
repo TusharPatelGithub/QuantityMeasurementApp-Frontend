@@ -51,6 +51,74 @@ export const measurementService = {
     });
     return response.data;
   },
+  compare: async (fromValue, fromUnit, toValue, toUnit, type) => {
+    const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+    const response = await apiClient.post('/api/v1/quantities/compare', {
+      first: {
+        value: parseFloat(fromValue),
+        unit: fromUnit.toUpperCase(),
+        measurementType: formattedType,
+      },
+      second: {
+        value: parseFloat(toValue),
+        unit: toUnit.toUpperCase(),
+        measurementType: formattedType,
+      }
+    });
+    return response.data;
+  },
+  add: async (fromValue, fromUnit, toValue, toUnit, type) => {
+    const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+    const response = await apiClient.post('/api/v1/quantities/add', {
+      first: {
+        value: parseFloat(fromValue),
+        unit: fromUnit.toUpperCase(),
+        measurementType: formattedType,
+      },
+      second: {
+        value: parseFloat(toValue),
+        unit: toUnit.toUpperCase(),
+        measurementType: formattedType,
+      }
+    });
+    return response.data;
+  },
+  subtract: async (fromValue, fromUnit, toValue, toUnit, type) => {
+    const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+    const response = await apiClient.post('/api/v1/quantities/subtract', {
+      first: {
+        value: parseFloat(fromValue),
+        unit: fromUnit.toUpperCase(),
+        measurementType: formattedType,
+      },
+      second: {
+        value: parseFloat(toValue),
+        unit: toUnit.toUpperCase(),
+        measurementType: formattedType,
+      }
+    });
+    return response.data;
+  },
+  divide: async (fromValue, fromUnit, toValue, toUnit, type) => {
+    const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+    const response = await apiClient.post('/api/v1/quantities/divide', {
+      first: {
+        value: parseFloat(fromValue),
+        unit: fromUnit.toUpperCase(),
+        measurementType: formattedType,
+      },
+      second: {
+        value: parseFloat(toValue),
+        unit: toUnit.toUpperCase(),
+        measurementType: formattedType,
+      }
+    });
+    return response.data;
+  },
+  getHistory: async (operation) => {
+    const response = await apiClient.get(`/api/v1/quantities/history/${operation}`);
+    return response.data;
+  }
 };
 
 export default apiClient;

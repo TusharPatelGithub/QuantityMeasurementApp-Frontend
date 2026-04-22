@@ -3,6 +3,7 @@ import { Box, Typography, Button, AppBar, Toolbar, Container } from '@mui/materi
 import { ScaleOutlined, LogoutOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Converter from '../components/Converter';
+import History from '../components/History';
 
 const types = ['length', 'volume', 'weight', 'temperature'];
 
@@ -16,6 +17,7 @@ const typeIcons = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const [activeType, setActiveType] = useState('length');
+  const [activeOperation, setActiveOperation] = useState('CONVERT');
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -91,7 +93,7 @@ export default function Dashboard() {
           display: 'flex',
           justifyContent: 'center',
           gap: 2,
-          mb: 5,
+          mb: 4,
           flexWrap: 'wrap',
         }}>
           {types.map(type => (
@@ -129,8 +131,63 @@ export default function Dashboard() {
           ))}
         </Box>
 
+        {/* Operation Bar */}
+        <Box sx={{
+          background: '#161623',
+          borderRadius: '12px',
+          p: 2,
+          mb: 4,
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          gap: 2,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+        }}>
+          <Typography sx={{ color: '#9ca3af', fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, letterSpacing: 1 }}>
+            <span style={{ fontSize: '1.2rem' }}>⚙</span> OPERATION
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, ml: { md: 'auto' } }}>
+            {[
+              { id: 'CONVERT', label: 'CONVERT', icon: '⇌' },
+              { id: 'COMPARE', label: 'COMPARE', icon: '⚖' },
+              { id: 'ADD', label: 'ADD', icon: '+' },
+              { id: 'SUBTRACT', label: 'SUBTRACT', icon: '-' },
+              { id: 'DIVIDE', label: 'DIVIDE', icon: '÷' }
+            ].map((op) => (
+              <Button
+                key={op.id}
+                onClick={() => setActiveOperation(op.id)}
+                sx={{
+                  background: activeOperation === op.id ? 'rgba(76, 29, 149, 0.3)' : 'transparent',
+                  border: activeOperation === op.id ? '1px solid #7c3aed' : '1px solid rgba(255,255,255,0.1)',
+                  color: activeOperation === op.id ? '#ddd6fe' : '#9ca3af',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  letterSpacing: 0.5,
+                  borderRadius: '8px',
+                  px: 2,
+                  py: 1,
+                  display: 'flex',
+                  gap: 1,
+                  '&:hover': {
+                    background: activeOperation === op.id ? 'rgba(76, 29, 149, 0.4)' : 'rgba(255,255,255,0.05)',
+                    borderColor: activeOperation === op.id ? '#8b5cf6' : 'rgba(255,255,255,0.2)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <span style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>{op.icon}</span> {op.label}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+
         {/* Converter */}
-        <Converter type={activeType} />
+        <Converter type={activeType} operation={activeOperation} />
+
+        {/* History */}
+        <History operation={activeOperation} />
       </Container>
     </Box>
   );

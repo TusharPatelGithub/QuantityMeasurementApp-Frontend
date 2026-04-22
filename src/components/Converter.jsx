@@ -24,51 +24,87 @@ const inputSx = {
   '& .MuiSelect-select': { fontFamily: "'DM Sans', sans-serif" },
 };
 
-export default function Converter({ type }) {
+export default function Converter({ type, operation = 'CONVERT' }) {
   const units = unitsConfig[type] || [];
-  const [fromUnit, setFromUnit] = useState(units[0]);
-  const [toUnit, setToUnit] = useState(units[1] || units[0]);
-  const [fromValue, setFromValue] = useState(1);
-  const [toValue, setToValue] = useState('');
+  const [firstUnit, setFirstUnit] = useState(units[0]);
+  const [secondUnit, setSecondUnit] = useState(units[1] || units[0]);
+  const [firstValue, setFirstValue] = useState(1);
+  const [secondValue, setSecondValue] = useState(operation === 'CONVERT' ? '' : 1);
   const [error, setError] = useState('');
-  const [formulaText, setFormulaText] = useState('');
+  const [resultText, setResultText] = useState('');
 
   useEffect(() => {
     const newUnits = unitsConfig[type] || [];
-    setFromUnit(newUnits[0]);
-    setToUnit(newUnits[1] || newUnits[0]);
-    setFromValue(1);
-    setToValue('');
-    setFormulaText('');
-  }, [type]);
+    setFirstUnit(newUnits[0]);
+    setSecondUnit(newUnits[1] || newUnits[0]);
+    setFirstValue(1);
+    setSecondValue(operation === 'CONVERT' ? '' : 1);
+    setResultText('');
+    setError('');
+  }, [type, operation]);
 
-  const performConversion = useCallback(async () => {
-    if (isNaN(fromValue) || fromValue === '') {
-      setToValue('');
-      setFormulaText('');
+  const performOperation = useCallback(async () => {
+    if (operation === 'CONVERT' && (isNaN(firstValue) || firstValue === '')) {
+      setSecondValue('');
+      setResultText('');
       return;
     }
+
+    if (operation !== 'CONVERT' && (isNaN(firstValue) || firstValue === '' || isNaN(secondValue) || secondValue === '')) {
+      setResultText('');
+      return;
+    }
+
     try {
       setError('');
-      const data = await measurementService.convert(fromValue, fromUnit, type, toUnit);
-      if (data?.result !== undefined) {
-        setToValue(data.result.toFixed(2));
-        setFormulaText(`${fromValue} ${fromUnit} = ${data.result.toFixed(4)} ${toUnit}`);
+      if (operation === 'CONVERT') {
+        const data = await measurementService.convert(firstValue, firstUnit, type, secondUnit);
+        if (data?.result !== undefined) {
+          setSecondValue(data.result.toFixed(2));
+          setResultText(`${firstValue} ${firstUnit} = ${data.result.toFixed(4)} ${secondUnit}`);
+        }
+      } else if (operation === 'COMPARE') {
+        const data = await measurementService.compare(firstValue, firstUnit, secondValue, secondUnit, type);
+        if (data?.result === 1) {
+          setResultText(`${firstValue} ${firstUnit} is EQUAL to ${secondValue} ${secondUnit}`);
+        } else {
+          setResultText(`${firstValue} ${firstUnit} is NOT EQUAL to ${secondValue} ${secondUnit}`);
+        }
+      } else if (operation === 'ADD') {
+        const data = await measurementService.add(firstValue, firstUnit, secondValue, secondUnit, type);
+        setResultText(`${firstValue} ${firstUnit} + ${secondValue} ${secondUnit} = ${data.result} ${data.unit}`);
+      } else if (operation === 'SUBTRACT') {
+        const data = await measurementService.subtract(firstValue, firstUnit, secondValue, secondUnit, type);
+        setResultText(`${firstValue} ${firstUnit} - ${secondValue} ${secondUnit} = ${data.result} ${data.unit}`);
+      } else if (operation === 'DIVIDE') {
+        const data = await measurementService.divide(firstValue, firstUnit, secondValue, secondUnit, type);
+        setResultText(`${firstValue} ${firstUnit} ÷ ${secondValue} ${secondUnit} = ${data.result}`);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Conversion failed');
+      setError(err.response?.data?.message || err.message || 'Operation failed');
+      setResultText('');
     }
-  }, [fromValue, fromUnit, toUnit, type]);
+  }, [firstValue, firstUnit, secondValue, secondUnit, type, operation]);
 
   useEffect(() => {
-    performConversion();
-  }, [performConversion]);
+    const delayDebounceFn = setTimeout(() => {
+      performOperation();
+    }, 400);
+    return () => clearTimeout(delayDebounceFn);
+  }, [performOperation]);
 
   const handleSwap = () => {
-    const temp = fromUnit;
-    setFromUnit(toUnit);
-    setToUnit(temp);
+    const tempUnit = firstUnit;
+    setFirstUnit(secondUnit);
+    setSecondUnit(tempUnit);
+    if (operation !== 'CONVERT') {
+      const tempVal = firstValue;
+      setFirstValue(secondValue);
+      setSecondValue(tempVal);
+    }
   };
+
+  const isConvert = operation === 'CONVERT';
 
   return (
     <Paper elevation={0} sx={{
@@ -90,24 +126,24 @@ export default function Converter({ type }) {
         gap: { xs: 1, sm: 3 },
         flexWrap: { xs: 'wrap', md: 'nowrap' },
       }}>
-        {/* From */}
+        {/* First Item */}
         <Box sx={{ flex: 1, display: 'flex', gap: 2, flexDirection: 'column', minWidth: { xs: '100%', md: 0 } }}>
           <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, color: '#6b7280', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
-            From
+            {isConvert ? 'From' : 'First Quantity'}
           </Typography>
           <TextField
             label="Value"
             type="number"
-            value={fromValue}
-            onChange={(e) => setFromValue(e.target.value)}
+            value={firstValue}
+            onChange={(e) => setFirstValue(e.target.value)}
             fullWidth
             sx={inputSx}
           />
           <TextField
             select
-            label="From Unit"
-            value={fromUnit}
-            onChange={(e) => setFromUnit(e.target.value)}
+            label="Unit"
+            value={firstUnit}
+            onChange={(e) => setFirstUnit(e.target.value)}
             fullWidth
             sx={inputSx}
           >
@@ -136,30 +172,34 @@ export default function Converter({ type }) {
           </IconButton>
         </Box>
 
-        {/* To */}
+        {/* Second Item */}
         <Box sx={{ flex: 1, display: 'flex', gap: 2, flexDirection: 'column', minWidth: { xs: '100%', md: 0 } }}>
           <Typography sx={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, color: '#6b7280', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
-            To
+            {isConvert ? 'To' : 'Second Quantity'}
           </Typography>
           <TextField
-            label="Result"
-            value={toValue}
-            InputProps={{ readOnly: true }}
+            label={isConvert ? 'Result Value' : 'Value'}
+            type={isConvert ? 'text' : 'number'}
+            value={secondValue}
+            onChange={(e) => {
+              if (!isConvert) setSecondValue(e.target.value);
+            }}
+            InputProps={{ readOnly: isConvert }}
             fullWidth
             sx={{
               ...inputSx,
               '& .MuiOutlinedInput-root': {
-    color: '#1a1a2e',
+                color: '#1a1a2e',
                 ...inputSx['& .MuiOutlinedInput-root'],
-                background: '#fdf2f1',
+                background: isConvert ? '#fdf2f1' : '#fafafa',
               }
             }}
           />
           <TextField
             select
-            label="To Unit"
-            value={toUnit}
-            onChange={(e) => setToUnit(e.target.value)}
+            label="Unit"
+            value={secondUnit}
+            onChange={(e) => setSecondUnit(e.target.value)}
             fullWidth
             sx={inputSx}
           >
@@ -168,8 +208,8 @@ export default function Converter({ type }) {
         </Box>
       </Box>
 
-      {/* Formula */}
-      {formulaText && (
+      {/* Result Formula Text */}
+      {resultText && (
         <Box sx={{
           mt: 4,
           p: 2.5,
@@ -180,11 +220,12 @@ export default function Converter({ type }) {
         }}>
           <Typography sx={{
             fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 600,
+            fontWeight: 700,
             color: '#922b21',
-            fontSize: '1.05rem',
+            fontSize: '1.15rem',
+            letterSpacing: 0.5
           }}>
-            {formulaText}
+            {resultText}
           </Typography>
         </Box>
       )}
