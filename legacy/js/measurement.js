@@ -15,98 +15,161 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // DOM Elements
-    const typeBtns = document.querySelectorAll('.type-btn');
-    const fromUnitSelect = document.getElementById('from-unit');
-    const toUnitSelect = document.getElementById('to-unit');
-    const fromValueInput = document.getElementById('from-value');
-    const toValueInput = document.getElementById('to-value');
-    const logoutBtn = document.getElementById('logout-btn');
-    const formulaText = document.getElementById('formula-text');
+    const typeBtns     = document.querySelectorAll('.type-btn');
+    const opBtns       = document.querySelectorAll('.op-btn');
+    const fromUnitSel  = document.getElementById('from-unit');
+    const toUnitSel    = document.getElementById('to-unit');
+    const fromValueIn  = document.getElementById('from-value');
+    const toValueIn    = document.getElementById('to-value');
+    const logoutBtn    = document.getElementById('logout-btn');
+    const formulaText  = document.getElementById('formula-text');
+    const labelFrom    = document.getElementById('label-from');
+    const labelTo      = document.getElementById('label-to');
 
-    let currentType = 'length';
+    let currentType      = 'length';
+    let currentOperation = 'CONVERT';
 
-    // Initialize units based on selected type
+    // ── Load Units ────────────────────────────────────────────────────────────
     function loadUnits(type) {
-        fromUnitSelect.innerHTML = '';
-        toUnitSelect.innerHTML = '';
-        
-        const typeUnits = units[type];
-        typeUnits.forEach(unit => {
-            fromUnitSelect.innerHTML += `<option value="${unit}">${unit}</option>`;
-            toUnitSelect.innerHTML += `<option value="${unit}">${unit}</option>`;
+        fromUnitSel.innerHTML = '';
+        toUnitSel.innerHTML   = '';
+        units[type].forEach(u => {
+            fromUnitSel.innerHTML += `<option value="${u}">${u}</option>`;
+            toUnitSel.innerHTML   += `<option value="${u}">${u}</option>`;
         });
-
-        // Default selections
-        if(typeUnits.length > 1) {
-            fromUnitSelect.selectedIndex = 0;
-            toUnitSelect.selectedIndex = 1;
+        if (units[type].length > 1) {
+            fromUnitSel.selectedIndex = 0;
+            toUnitSel.selectedIndex   = 1;
         }
     }
 
-    // Handlers
-    function handleTypeChange(e) {
-        const btn = e.currentTarget;
-        
-        // UI updates
-        typeBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Data updates
-        currentType = btn.getAttribute('data-type');
-        loadUnits(currentType);
-        performConversion();
+    // ── UI: update labels & readonly based on operation ───────────────────────
+    function applyOperationUi() {
+        if (currentOperation === 'CONVERT') {
+            labelFrom.textContent  = 'From';
+            labelTo.textContent    = 'To';
+            toValueIn.readOnly     = true;
+            toValueIn.value        = '';
+            toValueIn.style.backgroundColor = '';
+            toValueIn.style.cursor = 'default';
+        } else {
+            labelFrom.textContent  = 'First Quantity';
+            labelTo.textContent    = 'Second Quantity';
+            toValueIn.readOnly     = false;
+            toValueIn.value        = toValueIn.value || '1';
+            toValueIn.style.backgroundColor = '#fff';
+            toValueIn.style.cursor = 'text';
+        }
+        formulaText.innerText = '—';
     }
 
-    async function performConversion() {
-        const fromVal = parseFloat(fromValueInput.value);
+    // ── Core: perform the selected operation ──────────────────────────────────
+    async function performOperation() {
+        const fromVal  = parseFloat(fromValueIn.value);
+        const fromUnit = fromUnitSel.value;
+        const toUnit   = toUnitSel.value;
+
         if (isNaN(fromVal)) {
-            toValueInput.value = '';
-            formulaText.innerText = 'Please enter a valid number';
+            formulaText.innerText = 'Enter a valid number';
             return;
         }
 
-        const fromUnit = fromUnitSelect.value;
-        const toUnit = toUnitSelect.value;
-        
-        formulaText.innerText = `Converting...`;
-        
-        try {
-            const data = await apiClient.convert(fromVal, fromUnit, currentType, toUnit);
-            
-            if (data && data.result !== undefined) {
-                // Assuming backend returns { result: 5.00, ... }
-                toValueInput.value = data.result.toFixed(2);
-                formulaText.innerText = `${fromVal} ${fromUnit} = ${data.result.toFixed(4)} ${toUnit}`;
-            } else {
-                throw new Error("Invalid response format from server");
+        if (currentOperation !== 'CONVERT') {
+            const toVal = parseFloat(toValueIn.value);
+            if (isNaN(toVal)) {
+                formulaText.innerText = 'Enter a valid second quantity';
+                return;
             }
+        }
+
+        formulaText.innerText = 'Calculating…';
+
+        try {
+            if (currentOperation === 'CONVERT') {
+                const data = await apiClient.convert(fromVal, fromUnit, currentType, toUnit);
+                if (data && data.result !== undefined) {
+                    toValueIn.value       = data.result.toFixed(2);
+                    formulaText.innerText = `${fromVal} ${fromUnit} = ${data.result.toFixed(4)} ${toUnit}`;
+                }
+
+            } else if (currentOperation === 'COMPARE') {
+                const toVal = parseFloat(toValueIn.value);
+                const data  = await apiClient.compare(fromVal, fromUnit, toVal, toUnit, currentType);
+                const equal = data.result === 1;
+                formulaText.innerText = equal
+                    ? `✅ ${fromVal} ${fromUnit} is EQUAL to ${toVal} ${toUnit}`
+                    : `❌ ${fromVal} ${fromUnit} is NOT EQUAL to ${toVal} ${toUnit}`;
+
+            } else if (currentOperation === 'ADD') {
+                const toVal = parseFloat(toValueIn.value);
+                const data  = await apiClient.add(fromVal, fromUnit, toVal, toUnit, currentType);
+                formulaText.innerText = `${fromVal} ${fromUnit} + ${toVal} ${toUnit} = ${data.result} ${data.unit}`;
+
+            } else if (currentOperation === 'SUBTRACT') {
+                const toVal = parseFloat(toValueIn.value);
+                const data  = await apiClient.subtract(fromVal, fromUnit, toVal, toUnit, currentType);
+                formulaText.innerText = `${fromVal} ${fromUnit} − ${toVal} ${toUnit} = ${data.result} ${data.unit}`;
+
+            } else if (currentOperation === 'DIVIDE') {
+                const toVal = parseFloat(toValueIn.value);
+                const data  = await apiClient.divide(fromVal, fromUnit, toVal, toUnit, currentType);
+                formulaText.innerText = `${fromVal} ${fromUnit} ÷ ${toVal} ${toUnit} = ${data.result}`;
+            }
+
         } catch (error) {
-            console.error('Conversion error:', error);
-            toValueInput.value = 'Error';
-            formulaText.innerText = error.message || 'Failed to convert measurement.';
+            console.error('Operation error:', error);
+            formulaText.innerText = error.message || 'Operation failed.';
         }
     }
 
-    // Event Listeners
-    typeBtns.forEach(btn => btn.addEventListener('click', handleTypeChange));
-    fromValueInput.addEventListener('input', performConversion);
-    fromUnitSelect.addEventListener('change', performConversion);
-    toUnitSelect.addEventListener('change', performConversion);
+    // ── Event Listeners ───────────────────────────────────────────────────────
 
+    // Measurement type change
+    typeBtns.forEach(btn => btn.addEventListener('click', (e) => {
+        typeBtns.forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentType = e.currentTarget.getAttribute('data-type');
+        loadUnits(currentType);
+        performOperation();
+    }));
+
+    // Operation change
+    opBtns.forEach(btn => btn.addEventListener('click', (e) => {
+        opBtns.forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentOperation = e.currentTarget.getAttribute('data-op');
+        applyOperationUi();
+        performOperation();
+    }));
+
+    // Inputs
+    fromValueIn.addEventListener('input',  performOperation);
+    toValueIn.addEventListener('input',    performOperation);
+    fromUnitSel.addEventListener('change', performOperation);
+    toUnitSel.addEventListener('change',   performOperation);
+
+    // Logout
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('authToken');
         window.location.href = 'index.html';
     });
 
-    // Sub-icon reverse handle
+    // Swap button
     document.getElementById('swap-btn').addEventListener('click', () => {
-        const temp = fromUnitSelect.value;
-        fromUnitSelect.value = toUnitSelect.value;
-        toUnitSelect.value = temp;
-        performConversion();
+        const tempUnit = fromUnitSel.value;
+        fromUnitSel.value = toUnitSel.value;
+        toUnitSel.value   = tempUnit;
+
+        if (currentOperation !== 'CONVERT') {
+            const tempVal      = fromValueIn.value;
+            fromValueIn.value  = toValueIn.value;
+            toValueIn.value    = tempVal;
+        }
+        performOperation();
     });
 
-    // Initialize UI
+    // ── Init ─────────────────────────────────────────────────────────────────
     loadUnits(currentType);
-    performConversion();
+    applyOperationUi();
+    performOperation();
 });

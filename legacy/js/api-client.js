@@ -60,6 +60,38 @@ class ApiClient {
             targetUnit: targetUnit.toUpperCase(),
         });
     }
+
+    async compare(val1, unit1, val2, unit2, type) {
+        const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+        return this.post('/api/v1/quantities/compare', {
+            first:  { value: parseFloat(val1), unit: unit1.toUpperCase(), measurementType: formattedType },
+            second: { value: parseFloat(val2), unit: unit2.toUpperCase(), measurementType: formattedType },
+        });
+    }
+
+    async add(val1, unit1, val2, unit2, type) {
+        const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+        return this.post('/api/v1/quantities/add', {
+            first:  { value: parseFloat(val1), unit: unit1.toUpperCase(), measurementType: formattedType },
+            second: { value: parseFloat(val2), unit: unit2.toUpperCase(), measurementType: formattedType },
+        });
+    }
+
+    async subtract(val1, unit1, val2, unit2, type) {
+        const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+        return this.post('/api/v1/quantities/subtract', {
+            first:  { value: parseFloat(val1), unit: unit1.toUpperCase(), measurementType: formattedType },
+            second: { value: parseFloat(val2), unit: unit2.toUpperCase(), measurementType: formattedType },
+        });
+    }
+
+    async divide(val1, unit1, val2, unit2, type) {
+        const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+        return this.post('/api/v1/quantities/divide', {
+            first:  { value: parseFloat(val1), unit: unit1.toUpperCase(), measurementType: formattedType },
+            second: { value: parseFloat(val2), unit: unit2.toUpperCase(), measurementType: formattedType },
+        });
+    }
 }
 
 // Update this to your local backend if you don't want the 10-second Render spin-up delay!

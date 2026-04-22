@@ -480,6 +480,90 @@ body {
     background-color: #f8fbff;
     border: 1px dashed #4DA6FF;
     border-radius: 8px;
-    color: var(--text-muted);
+    color: var(--text-dark);
     font-size: 0.95rem;
+    font-weight: 500;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Operation Bar ─────────────────────────────────────────────────────────── */
+.operation-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: #161623;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.operation-label {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.operation-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.op-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #9ca3af;
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s ease;
+    font-family: 'Roboto', sans-serif;
+}
+
+.op-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #d1d5db;
+}
+
+.op-btn.active {
+    background: rgba(76, 29, 149, 0.35);
+    border-color: #7c3aed;
+    color: #ddd6fe;
+    box-shadow: 0 0 12px rgba(109, 40, 217, 0.25);
+}
+
+.op-btn.active:hover {
+    background: rgba(76, 29, 149, 0.5);
+}
+
+@media (max-width: 768px) {
+    .operation-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .conversion-workspace {
+        flex-direction: column;
+    }
+    .input-group-container {
+        width: 100%;
+    }
+    .swap-icon {
+        margin: 0 auto;
+    }
 }

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantity Measurement Dashboard</title>
-    <!-- CSS and Font Awesome -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -22,7 +21,8 @@
     <main class="dashboard-main">
         <div class="converter-card">
             <h2>Measurement Converter</h2>
-            
+
+            <!-- Measurement Type Selector -->
             <div class="measurement-type-selector">
                 <button class="type-btn active" data-type="length"><i class="fa-solid fa-ruler"></i> Length</button>
                 <button class="type-btn" data-type="volume"><i class="fa-solid fa-flask"></i> Volume</button>
@@ -30,10 +30,24 @@
                 <button class="type-btn" data-type="temperature"><i class="fa-solid fa-temperature-half"></i> Temperature</button>
             </div>
 
+            <!-- Operation Bar -->
+            <div class="operation-bar">
+                <span class="operation-label"><i class="fa-solid fa-gear"></i> OPERATION</span>
+                <div class="operation-btns">
+                    <button class="op-btn active" data-op="CONVERT"><i class="fa-solid fa-right-left"></i> CONVERT</button>
+                    <button class="op-btn" data-op="COMPARE"><i class="fa-solid fa-scale-balanced"></i> COMPARE</button>
+                    <button class="op-btn" data-op="ADD"><i class="fa-solid fa-plus"></i> ADD</button>
+                    <button class="op-btn" data-op="SUBTRACT"><i class="fa-solid fa-minus"></i> SUBTRACT</button>
+                    <button class="op-btn" data-op="DIVIDE"><i class="fa-solid fa-divide"></i> DIVIDE</button>
+                </div>
+            </div>
+
+            <!-- Conversion Workspace -->
             <div class="conversion-workspace">
+                <!-- First Quantity -->
                 <div class="input-group-container">
                     <div class="value-input-group">
-                        <label for="from-value">From</label>
+                        <label for="from-value" id="label-from">From</label>
                         <input type="number" id="from-value" value="1">
                     </div>
                     <div class="unit-select-group">
@@ -46,9 +60,10 @@
                     <i class="fa-solid fa-arrow-right-arrow-left"></i>
                 </div>
 
+                <!-- Second Quantity -->
                 <div class="input-group-container">
                     <div class="value-input-group">
-                        <label for="to-value">To</label>
+                        <label for="to-value" id="label-to">To</label>
                         <input type="number" id="to-value" readonly>
                     </div>
                     <div class="unit-select-group">
@@ -57,7 +72,8 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Result -->
             <div class="conversion-result">
                 <span id="formula-text">1 Unit = 1 Unit</span>
             </div>
